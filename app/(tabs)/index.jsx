@@ -36,7 +36,7 @@ export default function HomeScreen() {
           
           </SignedIn>
           <SignedOut>
-            <Login /> {/* Show Login screen if signed out */}
+            <Login />
           </SignedOut>
         </View>
       </NavigationContainer>
