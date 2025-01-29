@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker'; // For image upload
 import { collection, addDoc } from 'firebase/firestore'; // Firestore functions
 import { db } from '../../comfig/FireBaseConfig'; // Firebase configuration
 import { useRouter } from 'expo-router'; // For navigation
+import { Picker } from '@react-native-picker/picker'; // For dropdown selection
 
 const AddBusiness = () => {
   const [image, setImage] = useState(null); // State for image
@@ -13,7 +14,7 @@ const AddBusiness = () => {
   const [contact, setContact] = useState(''); // State for contact
   const [about, setAbout] = useState(''); // State for about
   const [address, setAddress] = useState(''); // State for address
-  const [category, setCategory] = useState(''); // State for category
+  const [category, setCategory] = useState('delivery'); // Default category
   const router = useRouter(); // Initialize the router
 
   // Function to handle image upload
@@ -59,10 +60,7 @@ const AddBusiness = () => {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/images/back.jpg')} style={styles.backgroundImage} />
-      <View style={styles.overlay}>
-       
-
+      <View style={styles.formContainer}>
         {/* Image Upload */}
         <TouchableOpacity onPress={handleImageUpload} style={styles.imageContainer}>
           {image ? (
@@ -75,55 +73,61 @@ const AddBusiness = () => {
         {/* Input Fields */}
         <TextInput
           style={styles.input}
-          placeholder="Name"
-          placeholderTextColor="#fff"
+          placeholder="Business Name"
+          placeholderTextColor="#666"
           value={name}
           onChangeText={setName}
         />
         <TextInput
           style={styles.input}
-          placeholderTextColor="#fff"
           placeholder="Likes"
+          placeholderTextColor="#666"
           value={likes.toString()}
           onChangeText={(text) => setLikes(Number(text))}
           keyboardType="numeric"
         />
         <TextInput
           style={styles.input}
-          placeholderTextColor="#fff"
-          placeholder="Website "
+          placeholder="Website"
+          placeholderTextColor="#666"
           value={website}
           onChangeText={setWebsite}
         />
         <TextInput
           style={styles.input}
-          placeholderTextColor="#fff"
           placeholder="Contact"
+          placeholderTextColor="#666"
           value={contact}
           onChangeText={setContact}
         />
         <TextInput
           style={styles.input}
-          placeholderTextColor="#fff"
           placeholder="About"
+          placeholderTextColor="#666"
           value={about}
           onChangeText={setAbout}
           multiline
         />
         <TextInput
           style={styles.input}
-          placeholderTextColor="#fff"
           placeholder="Address"
+          placeholderTextColor="#666"
           value={address}
           onChangeText={setAddress}
         />
-        <TextInput
-          style={styles.input}
-          placeholderTextColor="#fff"
-          placeholder="Category"
-          value={category}
-          onChangeText={setCategory}
-        />
+
+        {/* Category Dropdown */}
+        <Picker
+          selectedValue={category}
+          onValueChange={(itemValue) => setCategory(itemValue)}
+          style={styles.picker}
+        >
+          <Picker.Item label="Delivery" value="delivery" />
+          <Picker.Item label="Wash" value="wash" />
+          <Picker.Item label="Gym" value="gym" />
+          <Picker.Item label="Food" value="food" />
+          <Picker.Item label="Car" value="car" />
+        </Picker>
 
         {/* Submit Button */}
         <TouchableOpacity style={styles.button} onPress={handleAddBusiness}>
@@ -139,60 +143,57 @@ export default AddBusiness;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    color:'white'
-  },
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-    position: 'absolute',
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', // Black glassmorphism effect
-    padding: 20,
+    backgroundColor: '#f8f8f8',
+    paddingTop: 50,
     justifyContent: 'center',
- 
+    alignItems: 'center',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 30,
+  formContainer: {
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   imageContainer: {
     width: 120,
     height: 120,
     borderRadius: 10,
-    backgroundColor: '#fff',
+    backgroundColor: '#e5e5e5',
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
     marginBottom: 20,
-    marginRight:250,
     overflow: 'hidden',
   },
   image: {
     width: '100%',
     height: '100%',
+    borderRadius: 10,
   },
   placeholderImage: {
-    width: 80,
-    height: 80,
-   
+    width: 60,
+    height: 60,
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    padding: 15,
+    backgroundColor: '#f5f5f5',
+    padding: 12,
     borderRadius: 10,
     marginBottom: 15,
-    color: '#fff',
-    fontWeight: 'bold',
-    placeholderTextColor: '#fff', // Set placeholder color to white
+    fontSize: 16,
+    color: '#333',
   },
-  
+  picker: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 10,
+    marginBottom: 15,
+    fontSize: 16,
+    color: '#333',
+  },
   button: {
     backgroundColor: '#5D3FD3',
     padding: 15,
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
 });

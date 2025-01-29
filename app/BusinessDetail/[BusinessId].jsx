@@ -210,7 +210,7 @@ import {
   
         {/* Rating */}
         <View style={styles.ratingContainer}>
-          <Text style={styles.ratingText}>{business.star || '0'}</Text>
+          <Text style={styles.ratingText}>{business.likes || '0'}</Text>
           <MaterialIcons name="star" size={20} color="#FFD700" />
         </View>
   

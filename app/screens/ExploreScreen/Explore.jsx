@@ -63,6 +63,6 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#5D3FD3',
     height: 200,
-    borderRadius: 20
+   
   }
 });
