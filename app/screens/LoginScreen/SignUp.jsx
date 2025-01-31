@@ -1,47 +1,32 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
-import { auth, db } from '../../../comfig/FireBaseConfig';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { auth } from '../../../comfig/FireBaseConfig';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
-const Register = () => {
-  const [name, setName] = useState('');
+const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
 
-  const handleRegister = async () => {
+  const handleLogin = async () => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // Store user data in Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        name,
-        email,
-      });
-
-      Alert.alert('Success', 'Registration successful!');
-      router.push('/'); // Navigate to home page
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      if (userCredential.user) {
+        router.push('/'); // Navigate to home page
+      }
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert('Error', 'Invalid email or password. Please register.');
+      router.push('/screens/LoginScreen/Register'); // Navigate to register page
     }
   };
 
   return (
     <ImageBackground source={require('../../../assets/images/back1.webp')} style={styles.background}>
       <View style={styles.overlay}>
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>Join us and start your journey</Text>
+        <Text style={styles.title}>Welcome Back!</Text>
+        <Text style={styles.subtitle}>Sign in to continue</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Name"
-          placeholderTextColor="#888"
-          value={name}
-          onChangeText={setName}
-        />
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -59,20 +44,20 @@ const Register = () => {
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>Register</Text>
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
 
-        <Text style={styles.footerText}>Already have an account?</Text>
-        <TouchableOpacity onPress={() => router.push('/screens/LoginScreen/SignUp')}>
-          <Text style={styles.linkText}>Sign In</Text>
+        <Text style={styles.footerText}>Don't have an account?</Text>
+        <TouchableOpacity onPress={() => router.push('/screens/LoginScreen/Register')}>
+          <Text style={styles.linkText}>Register Now</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
   );
 };
 
-export default Register;
+export default SignUp;
 
 const styles = StyleSheet.create({
   background: {

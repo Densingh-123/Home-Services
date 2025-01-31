@@ -1,32 +1,23 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions } from 'react-native';
 import React from 'react';
-import { useOAuth } from '@clerk/clerk-expo';
-import useWarmUpBrowser from '../../hooks/WarmUpBrowser';
-import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking'; // Import expo-linking
+import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { useRouter } from 'expo-router';
+import { signInWithGoogle } from '../../../comfig/FireBaseConfig';
 
 const { width, height } = Dimensions.get('window');
-WebBrowser.maybeCompleteAuthSession();
 
 const Login = () => {
-  useWarmUpBrowser();
-  const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
+  const router = useRouter();
 
-  const onPress = React.useCallback(async () => {
+  const handleGoogleSignIn = async () => {
     try {
-      const { createdSessionId, setActive } = await startOAuthFlow({
-        redirectUrl: Linking.createURL('home', { scheme: 'myapp' }), // Redirect to 'home'
-      });
-
-      if (createdSessionId) {
-        setActive({ session: createdSessionId }); // Set the active session
+      const user = await signInWithGoogle();
+      if (user) {
+        router.push('/'); // Navigate to home page
       }
-    } catch (err) {
-      console.error('OAuth error:', err); // Log the full error object
-      console.error('Error message:', err.message); // Log the error message
-      console.error('Error stack:', err.stack); // Log the error stack trace
+    } catch (error) {
+      console.error('Google sign-in failed:', error);
     }
-  }, [startOAuthFlow]);
+  };
 
   return (
     <View style={styles.container}>
@@ -38,9 +29,12 @@ const Login = () => {
         <Text style={styles.subtitle}>
           Best app to find services near you which deliver you a professional service
         </Text>
-        <TouchableOpacity style={styles.button} onPress={onPress}>
-          <Text style={styles.buttonText}>Let's Get Started</Text>
+        <TouchableOpacity style={styles.button} onPress={() => router.push('/screens/LoginScreen/SignUp')}>
+          <Text style={styles.buttonText}>Get Started</Text>
         </TouchableOpacity>
+        {/* <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
+          <Text style={styles.googleButtonText}>Continue with Google</Text>
+        </TouchableOpacity> */}
       </View>
     </View>
   );
@@ -55,7 +49,7 @@ const styles = StyleSheet.create({
   },
   loginImage: {
     width: width,
-    height: height * 0.6,
+    height:600,
     resizeMode: 'cover',
   },
   overlay: {
@@ -96,14 +90,24 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: '80%',
     alignItems: 'center',
-    shadowColor: '#5D3FD3',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
+    marginBottom: 10,
   },
   buttonText: {
     color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  googleButton: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 10,
+    width: '80%',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#5D3FD3',
+  },
+  googleButtonText: {
+    color: '#5D3FD3',
     fontSize: 18,
     fontWeight: 'bold',
   },

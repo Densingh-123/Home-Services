@@ -1,6 +1,6 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -15,6 +15,7 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+  const router = useRouter();
 
   useEffect(() => {
     if (loaded) {
@@ -22,13 +23,34 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
+  useEffect(() => {
+    // Redirect to the login page after the root layout is mounted
+    if (loaded) {
+      router.push('/screens/LoginScreen/Login');
+    }
+  }, [loaded]);
+
   if (!loaded) {
-    return null;
+    return null; // Show nothing while fonts are loading
   }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
+        {/* Login Screen (Hidden Header) */}
+        <Stack.Screen
+          name="screens/LoginScreen/Login"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="screens/LoginScreen/SignUp"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="screens/LoginScreen/Register"
+          options={{ headerShown: false }}
+        />
+
         {/* Tabs Screen (Hidden Header) */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
@@ -36,8 +58,8 @@ export default function RootLayout() {
         <Stack.Screen
           name="BusinessList/[Category]"
           options={{
-            title: 'Business List', // Set a title for the screen
-            headerShown: true, // Show the header
+            title: 'Business List',
+            headerShown: true,
           }}
         />
 
@@ -45,8 +67,8 @@ export default function RootLayout() {
         <Stack.Screen
           name="BusinessDetail/[BusinessId]"
           options={{
-            title: 'Business Details', // Set a title for the screen
-            headerShown: true, // Show the header
+            title: 'Business Details',
+            headerShown: true,
           }}
         />
 

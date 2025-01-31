@@ -14,7 +14,7 @@ import { db } from '@/comfig/FireBaseConfig';
 import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
-const isLargeScreen = width > 768; // Define breakpoint for large screens
+const isLargeScreen = width > 768;
 
 const Category = () => {
   const [categories, setCategories] = useState([]); 
@@ -30,9 +30,16 @@ const Category = () => {
       const q = query(collection(db, 'Category')); 
       const querySnapshot = await getDocs(q);
       const categoryList = [];
+
       querySnapshot.forEach((doc) => {
-        categoryList.push({ id: doc.id, ...doc.data() });
+        const data = doc.data();
+        if (data.name) {
+          const trimmedName = data.name.trim(); // Trim spaces
+          categoryList.push({ id: doc.id, name: trimmedName, ...data });
+        }
       });
+
+      console.log('Fetched Categories:', categoryList); // Debugging log
       setCategories(categoryList);
     } catch (error) {
       console.error('Error fetching category data:', error);
@@ -108,7 +115,6 @@ const styles = StyleSheet.create({
   },
   bannerImage: {
     width: '100%',
-  
     resizeMode: 'cover',
     marginBottom: 15,
   },
@@ -129,7 +135,7 @@ const styles = StyleSheet.create({
     color: '#5D3FD3',
   },
   flatListContent: {
-    zIndex:-1,
+    zIndex: -1,
     paddingVertical: 10,
     ...(isLargeScreen && { flexDirection: 'row', justifyContent: 'space-between', width: '100%' }),
   },

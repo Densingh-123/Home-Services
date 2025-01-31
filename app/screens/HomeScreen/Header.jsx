@@ -1,13 +1,22 @@
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Animated } from 'react-native';
-import React, { useState, useRef } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Animated } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { auth } from '../../../comfig/FireBaseConfig';
 
 const Header = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const dropdownAnim = useRef(new Animated.Value(0)).current;
+  const [userEmail, setUserEmail] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+    if (currentUser && currentUser.email) {
+      setUserEmail(currentUser.email);
+    }
+  }, []);
 
   const toggleDropdown = () => {
     if (dropdownVisible) {
@@ -33,27 +42,35 @@ const Header = () => {
 
   return (
     <LinearGradient colors={['#5D3FD3', '#7B68EE']} style={styles.container}>
-      {/* Profile Section */}
       <View style={styles.profileSection}>
-        <Image source={require('../../../assets/images/user.webp')} style={styles.profileImage} />
+        <View style={styles.profileCircle}>
+          <Text style={styles.profileLetter}>{userEmail.charAt(0).toUpperCase()}</Text>
+        </View>
         <View style={styles.welcomeTextContainer}>
-          <Text style={styles.welcomeText}>Welcome, User</Text>
+          <Text style={styles.welcomeText}>{userEmail ? userEmail.split('@')[0] : 'User'}</Text>
           <TouchableOpacity onPress={toggleDropdown}>
             <FontAwesome name="bars" size={26} color="white" style={styles.menuIcon} />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Dropdown Menu */}
       {dropdownVisible && (
-        <Animated.View style={[styles.dropdownMenu, { opacity: dropdownAnim }]}>
+        <Animated.View style={[styles.dropdownMenu, { opacity: dropdownAnim }]}> 
+          <TouchableOpacity style={styles.closeButton} onPress={() => setDropdownVisible(false)}>
+            <Text style={styles.closeText}>✖</Text>
+          </TouchableOpacity>
+
           <View style={styles.dropdownGrid}>
-            <TouchableOpacity style={styles.dropdownButton} onPress={() => navigateTo('/business/AddBusiness')}>
-              <Text style={styles.buttonText}>➕ Add</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.dropdownButton} onPress={() => navigateTo('/business/MyBusiness')}>
-              <Text style={styles.buttonText}>🏢 My Biz</Text>
-            </TouchableOpacity>
+            {userEmail === 'den@gmail.com' && (
+              <TouchableOpacity style={styles.dropdownButton} onPress={() => navigateTo('/business/AddBusiness')}>
+                <Text style={styles.buttonText}>➕ Add</Text>
+              </TouchableOpacity>
+            )}
+            {userEmail === 'den@gmail.com' && (
+              <TouchableOpacity style={styles.dropdownButton} onPress={() => navigateTo('/business/MyBusiness')}>
+                <Text style={styles.buttonText}>🏢 My Biz</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity style={styles.dropdownButton} onPress={() => navigateTo('/business/Cart')}>
               <Text style={styles.buttonText}>🛒 Cart</Text>
             </TouchableOpacity>
@@ -67,7 +84,6 @@ const Header = () => {
         </Animated.View>
       )}
 
-      {/* Search Bar */}
       <View style={styles.searchSection}>
         <FontAwesome name="search" size={20} color="gray" style={styles.searchIcon} />
         <TextInput placeholder="Search services..." style={styles.searchInput} placeholderTextColor="gray" />
@@ -95,12 +111,20 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     justifyContent: 'space-between',
   },
-  profileImage: {
+  profileCircle: {
     width: 60,
     height: 60,
     borderRadius: 30,
+    backgroundColor: '#FFD700',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 2,
     borderColor: 'white',
+  },
+  profileLetter: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#5D3FD3',
   },
   welcomeTextContainer: {
     flexDirection: 'row',
@@ -125,10 +149,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     paddingVertical: 10,
     paddingHorizontal: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
     elevation: 3,
   },
   searchIcon: {
@@ -141,27 +161,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-
-  /* Dropdown */
   dropdownMenu: {
     position: 'absolute',
     top: 30,
-    right:70,
+    left: 15,
+    right: 70,
     backgroundColor: 'white',
     borderRadius: 12,
     padding: 10,
-    width: 300,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 10, 
+    width: 355,
+    elevation: 10,
     zIndex: 9,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 20,
+    backgroundColor: '#FF0000',
+    padding: 5,
+    borderRadius: 5,
+    elevation: 5,
+  },
+  closeText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'white',
   },
   dropdownGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-around',
+    marginTop: 20,
   },
   dropdownButton: {
     width: '45%',
@@ -170,10 +200,6 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     borderRadius: 10,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
     elevation: 5,
   },
   dropdownButtonSingle: {
@@ -183,12 +209,6 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     borderRadius: 10,
     alignItems: 'center',
-    alignSelf: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 5,
   },
   buttonText: {
     fontSize: 16,
