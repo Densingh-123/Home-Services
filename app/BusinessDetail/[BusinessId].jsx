@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, setDoc, collection } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, setDoc, collection, getDocs, query, where, deleteDoc, addDoc } from 'firebase/firestore';
 import { db } from '../../comfig/FireBaseConfig';
 import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
@@ -34,9 +34,12 @@ const BusinessDetail = () => {
   const [comment, setComment] = useState(''); // State to manage user comment
   const [isSubmitting, setIsSubmitting] = useState(false); // State to manage submission loading
   const [comments, setComments] = useState([]); // State to store comments from the database
+  const [totalLikes, setTotalLikes] = useState(0); // State to store total likes count
 
   useEffect(() => {
     getBusinessDetailById();
+    getLikesData();
+    getCommentsData(); // Fetch comments
   }, []);
 
   const getBusinessDetailById = async () => {
@@ -48,7 +51,6 @@ const BusinessDetail = () => {
         console.log('Document data:', docSnap.data()); // Log the data for debugging
         setBusiness(docSnap.data()); // Update state with the fetched data
         setLiked(docSnap.data().likes?.includes('user-id')); // Check if the product is liked by the user
-        setComments(docSnap.data().comments || []); // Fetch and set comments
       } else {
         console.log('No such document!'); // Log if the document doesn't exist
       }
@@ -59,23 +61,50 @@ const BusinessDetail = () => {
     }
   };
 
-  // Handle like/unlike functionality
+  // Fetch all likes for this business
+  const getLikesData = async () => {
+    try {
+      const q = query(collection(db, 'Likes'), where('businessId', '==', BusinessId)); // Query for likes related to this business
+      const querySnapshot = await getDocs(q); // Get all like documents
+
+      setTotalLikes(querySnapshot.size); // Set the total number of likes
+    } catch (error) {
+      console.error('Error fetching likes:', error);
+    }
+  };
+
+  // Fetch all comments for this business
+  const getCommentsData = async () => {
+    try {
+      const q = query(collection(db, 'Comments'), where('businessId', '==', BusinessId)); // Query for comments related to this business
+      const querySnapshot = await getDocs(q); // Get all comment documents
+
+      const commentsData = [];
+      querySnapshot.forEach((doc) => {
+        commentsData.push(doc.data()); // Push each comment to the commentsData array
+      });
+
+      setComments(commentsData); // Set comments to state
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    }
+  };
+
+  // Handle like/unlike functionality and store in Likes collection
   const handleLike = async () => {
     try {
-      const docRef = doc(db, 'BusinessList', BusinessId);
+      const likesRef = doc(collection(db, 'Likes'), `${BusinessId}_user-id`); // Reference to the Likes collection
       if (liked) {
-        await updateDoc(docRef, {
-          likes: arrayRemove('user-id'), // Remove user ID from likes array
-        });
+        await deleteDoc(likesRef); // Remove like from Likes collection
+        setTotalLikes(totalLikes - 1); // Decrease total likes count
         Toast.show({
           type: 'success',
           text1: 'Unliked',
           text2: 'You unliked this business.',
         });
       } else {
-        await updateDoc(docRef, {
-          likes: arrayUnion('user-id'), // Add user ID to likes array
-        });
+        await setDoc(likesRef, { businessId: BusinessId, userId: 'user-id' }); // Add like to Likes collection
+        setTotalLikes(totalLikes + 1); // Increase total likes count
         Toast.show({
           type: 'success',
           text1: 'Liked',
@@ -129,12 +158,17 @@ const BusinessDetail = () => {
 
     setIsSubmitting(true); // Start loading
     try {
-      const docRef = doc(db, 'BusinessList', BusinessId);
-      await updateDoc(docRef, {
-        comments: arrayUnion({ userId: 'user-id', comment: comment, rating: rating }), // Add user comment and rating to comments array
+      // Add the comment to the "Comments" collection
+      await addDoc(collection(db, 'Comments'), {
+        businessId: BusinessId,
+        userId: 'user-id',
+        comment: comment,
+        rating: rating,
+        timestamp: new Date(),
       });
-      setComment(''); // Clear comment input
-      setComments((prevComments) => [...prevComments, { userId: 'user-id', comment: comment, rating: rating }]); // Update local state
+
+      setComment(''); // Clear the input field
+      getCommentsData(); // Refresh the comments list
       Toast.show({
         type: 'success',
         text1: 'Comment Added',
@@ -234,7 +268,7 @@ const BusinessDetail = () => {
 
       {/* Rating */}
       <View style={styles.ratingContainer}>
-        <Text style={styles.ratingText}>{business.likes || '0'}</Text>
+        <Text style={styles.ratingText}>{totalLikes || '0'} Likes</Text>
         <MaterialIcons name="star" size={20} color="#FFD700" />
       </View>
 
@@ -271,54 +305,48 @@ const BusinessDetail = () => {
             <TouchableOpacity key={star} onPress={() => handleRating(star)}>
               <MaterialIcons
                 name={star <= rating ? 'star' : 'star-border'}
-                size={40}
-                color={star <= rating ? '#FFD700' : '#C8C7C8'}
+                size={24}
+                color="#FFD700"
               />
             </TouchableOpacity>
           ))}
         </View>
-        <Text style={styles.ratingText}>{rating}/5</Text>
       </LinearGradient>
 
-      <TouchableOpacity style={styles.addButton} onPress={handleAddToCart}>
-        <Text style={styles.addButtonText}>Add Service</Text>
-      </TouchableOpacity>
+      {/* Comments Section */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Comments</Text>
+        {comments.map((comment, index) => (
+          <View key={index} style={styles.commentContainer}>
+            <Text style={styles.commentText}>{comment.comment}</Text>
+            <Text style={styles.commentRating}>Rating: {comment.rating} stars</Text>
+          </View>
+        ))}
 
-      
-
-      {/* Comment Input */}
-      <View style={styles.commentInputContainer}>
+        {/* Comment Input */}
         <TextInput
-          style={styles.commentInput}
-          placeholder="Add a comment"
           value={comment}
           onChangeText={setComment}
+          placeholder="Write a comment..."
+          style={styles.commentInput}
         />
         <TouchableOpacity
-          style={styles.commentSubmitButton}
+          style={styles.submitButton}
           onPress={handleCommentSubmit}
           disabled={isSubmitting}
         >
           {isSubmitting ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Text style={styles.commentSubmitButtonText}>Submit</Text>
+            <Text style={styles.submitButtonText}>Submit</Text>
           )}
         </TouchableOpacity>
       </View>
-{/* Comments Section */}
-<View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Comments</Text>
-        {comments.map((comment, index) => (
-          <View key={index} style={styles.commentContainer}>
-            <Text style={styles.commentText}>
-              {comment.userId}: {comment.comment}
-            </Text>
-          </View>
-        ))}
-      </View>
-      {/* Toast Notifications */}
-      <Toast />
+
+      {/* Add to Cart */}
+      <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
+        <Text style={styles.addToCartText}>Add to Cart</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
@@ -326,7 +354,7 @@ const BusinessDetail = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFF',
   },
   loadingContainer: {
     flex: 1,
@@ -334,17 +362,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    fontSize: 20,
+    fontSize: 18,
     color: '#5D3FD3',
+  },
+  backButton: {
+    padding: 10,
   },
   businessImage: {
     width: '100%',
-    height: 250,
+    height: 300,
     resizeMode: 'cover',
-  },
-  backButton: {
-    marginTop: 20,
-    marginLeft: 10,
   },
   likeButton: {
     position: 'absolute',
@@ -352,106 +379,93 @@ const styles = StyleSheet.create({
     right: 20,
   },
   businessName: {
-    fontSize: 30,
+    fontSize: 24,
     fontWeight: 'bold',
+    marginTop: 20,
     textAlign: 'center',
-    marginTop: 10,
   },
   ratingContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 10,
+    marginTop: 10,
   },
   ratingText: {
     fontSize: 18,
-    marginRight: 5,
+    color: '#333',
+    marginRight: 10,
   },
   iconRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: 15,
+    justifyContent: 'space-around',
+    marginTop: 20,
   },
   icon: {
-    width: 40,
-    height: 40,
-    marginHorizontal: 10,
+    width: 30,
+    height: 30,
   },
   sectionContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginBottom: 20,
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: '#f7f7f7',
+    borderRadius: 10,
+    marginHorizontal: 15,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    marginBottom: 10,
   },
   sectionText: {
     fontSize: 16,
-    color: '#555',
-    marginTop: 10,
+    color: '#333',
   },
   ratingSectionContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    padding: 20,
     borderRadius: 10,
-    marginVertical: 20,
-    backgroundColor: '#F5F5F5',
+    marginTop: 20,
   },
   starContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: 10,
-  },
-  addButton: {
-    backgroundColor: '#5D3FD3',
-    paddingVertical: 15,
-    marginVertical: 15,
-    alignItems: 'center',
-    borderRadius: 10,
-    width:300,
-    margin:70
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    marginTop: 10,
   },
   commentContainer: {
-    marginVertical: 5,
-    paddingVertical: 5,
-    borderBottomWidth: 1,
-    borderColor: '#f0f0f0',
+    marginBottom: 15,
   },
   commentText: {
     fontSize: 16,
     color: '#333',
   },
-  commentInputContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginVertical: 20,
+  commentRating: {
+    fontSize: 14,
+    color: '#777',
   },
   commentInput: {
-    flex: 1,
+    height: 40,
+    borderColor: '#ddd',
     borderWidth: 1,
-    borderColor: '#5D3FD3',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 10,
-    fontSize: 16,
-    marginRight: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+    paddingLeft: 10,
   },
-  commentSubmitButton: {
+  submitButton: {
     backgroundColor: '#5D3FD3',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 10,
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
   },
-  commentSubmitButtonText: {
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  addToCartButton: {
+    backgroundColor: '#5D3FD3',
+    padding: 15,
+    borderRadius: 5,
+    margin: 20,
+    alignItems: 'center',
+  },
+  addToCartText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',

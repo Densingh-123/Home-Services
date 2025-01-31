@@ -129,6 +129,7 @@ const styles = StyleSheet.create({
     color: '#5D3FD3',
   },
   flatListContent: {
+    zIndex:-1,
     paddingVertical: 10,
     ...(isLargeScreen && { flexDirection: 'row', justifyContent: 'space-between', width: '100%' }),
   },

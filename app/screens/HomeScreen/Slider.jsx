@@ -56,7 +56,7 @@ export default Slider;
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 20,
+    zIndex:1,
   },
   slide: {
     width: Dimensions.get('window').width * 0.8, // 80% of screen width
