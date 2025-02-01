@@ -7,7 +7,6 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -24,20 +23,18 @@ export default function RootLayout() {
   }, [loaded]);
 
   useEffect(() => {
-    // Redirect to the login page after the root layout is mounted
     if (loaded) {
       router.push('/screens/LoginScreen/Login');
     }
   }, [loaded]);
 
   if (!loaded) {
-    return null; // Show nothing while fonts are loading
+    return null;
   }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        {/* Login Screen (Hidden Header) */}
         <Stack.Screen
           name="screens/LoginScreen/Login"
           options={{ headerShown: false }}
@@ -50,11 +47,7 @@ export default function RootLayout() {
           name="screens/LoginScreen/Register"
           options={{ headerShown: false }}
         />
-
-        {/* Tabs Screen (Hidden Header) */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-        {/* BusinessList Screen */}
         <Stack.Screen
           name="BusinessList/[Category]"
           options={{
@@ -62,8 +55,6 @@ export default function RootLayout() {
             headerShown: true,
           }}
         />
-
-        {/* BusinessDetail Screen */}
         <Stack.Screen
           name="BusinessDetail/[BusinessId]"
           options={{
@@ -71,8 +62,6 @@ export default function RootLayout() {
             headerShown: true,
           }}
         />
-
-        {/* Not Found Screen */}
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
