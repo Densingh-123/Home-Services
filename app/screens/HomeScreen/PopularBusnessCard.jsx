@@ -42,7 +42,7 @@ const PopularBusinessCard = ({ business }) => {
           <Text style={[styles.shopName, isLargeScreen && styles.shopNameLarge]}>{business?.name || 'No Name'}</Text>
           <View style={styles.ratingContainer}>
             <MaterialIcons name="star" size={20} color="#FFD700" />
-            <Text style={styles.ratingText}>{business?.likes || '0'}</Text>
+            {/* <Text style={styles.ratingText}>{business?.likes || '0'}</Text> */}
           </View>
         </View>
 

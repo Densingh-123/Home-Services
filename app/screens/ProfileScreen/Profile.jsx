@@ -53,14 +53,14 @@ const UserIntro = () => {
         <Text style={styles.serviceText}>✅ Gym & Fitness - Find nearby fitness centers and trainers.</Text>
       </View>
 
-      <View style={styles.buttonContainer}>
+      {/* <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={handleAddBusiness}>
           <Text style={styles.buttonText}>Add Business</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={handleMyBusiness}>
           <Text style={styles.buttonText}>My Business</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       <View style={styles.additionalInfo}>
         <Text style={styles.infoText}>📍 Use the map to locate services near you.</Text>

@@ -3,19 +3,29 @@ import React, { useState, useRef, useEffect } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { auth } from '../../../comfig/FireBaseConfig';
+import { auth, db } from '../../../comfig/FireBaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 
 const Header = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const dropdownAnim = useRef(new Animated.Value(0)).current;
+  const [userName, setUserName] = useState('User');
   const [userEmail, setUserEmail] = useState('');
   const router = useRouter();
 
   useEffect(() => {
-    const currentUser = auth.currentUser;
-    if (currentUser && currentUser.email) {
-      setUserEmail(currentUser.email);
-    }
+    const fetchUserData = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setUserName(userDoc.data().name);
+          setUserEmail(currentUser.email);
+        }
+      }
+    };
+    fetchUserData();
   }, []);
 
   const toggleDropdown = () => {
@@ -37,17 +47,17 @@ const Header = () => {
 
   const navigateTo = (path) => {
     setDropdownVisible(false);
-    router.push(path);
+    router.push({ pathname: path, params: { userEmail } });
   };
 
   return (
     <LinearGradient colors={['#5D3FD3', '#7B68EE']} style={styles.container}>
       <View style={styles.profileSection}>
         <View style={styles.profileCircle}>
-          <Text style={styles.profileLetter}>{userEmail.charAt(0).toUpperCase()}</Text>
+          <Text style={styles.profileLetter}>{userName.charAt(0).toUpperCase()}</Text>
         </View>
         <View style={styles.welcomeTextContainer}>
-          <Text style={styles.welcomeText}>{userEmail ? userEmail.split('@')[0] : 'User'}</Text>
+          <Text style={styles.welcomeText}>{userName}</Text>
           <TouchableOpacity onPress={toggleDropdown}>
             <FontAwesome name="bars" size={26} color="white" style={styles.menuIcon} />
           </TouchableOpacity>
@@ -55,18 +65,18 @@ const Header = () => {
       </View>
 
       {dropdownVisible && (
-        <Animated.View style={[styles.dropdownMenu, { opacity: dropdownAnim }]}> 
+        <Animated.View style={[styles.dropdownMenu, { opacity: dropdownAnim }]}>
           <TouchableOpacity style={styles.closeButton} onPress={() => setDropdownVisible(false)}>
             <Text style={styles.closeText}>✖</Text>
           </TouchableOpacity>
 
           <View style={styles.dropdownGrid}>
-            {userEmail === 'den@gmail.com' && (
+            {userName === 'Densingh' && (
               <TouchableOpacity style={styles.dropdownButton} onPress={() => navigateTo('/business/AddBusiness')}>
                 <Text style={styles.buttonText}>➕ Add</Text>
               </TouchableOpacity>
             )}
-            {userEmail === 'den@gmail.com' && (
+            {userName === 'Densingh' && (
               <TouchableOpacity style={styles.dropdownButton} onPress={() => navigateTo('/business/MyBusiness')}>
                 <Text style={styles.buttonText}>🏢 My Biz</Text>
               </TouchableOpacity>
