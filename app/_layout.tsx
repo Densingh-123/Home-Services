@@ -62,6 +62,7 @@ export default function RootLayout() {
             headerShown: true,
           }}
         />
+<<<<<<< HEAD
         <Stack.Screen
           name="business/Likes"
           options={{
@@ -69,6 +70,8 @@ export default function RootLayout() {
             headerShown: true,
           }}
         />
+=======
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

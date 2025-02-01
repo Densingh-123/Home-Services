@@ -50,7 +50,11 @@ const BusinessDetail = () => {
       if (docSnap.exists()) {
         console.log('Document data:', docSnap.data());
         setBusiness(docSnap.data());
+<<<<<<< HEAD
         setLiked(docSnap.data().likes?.includes(auth.currentUser?.email));
+=======
+        setLiked(docSnap.data().likes?.includes('user-id'));
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
         setComments(docSnap.data().comments || []);
       } else {
         console.log('No such document!');
@@ -65,6 +69,7 @@ const BusinessDetail = () => {
   const handleLike = async () => {
     try {
       const docRef = doc(db, 'BusinessList', BusinessId);
+<<<<<<< HEAD
       const likesRef = doc(db, 'Likes', BusinessId);
       const userEmail = auth.currentUser?.email;
 
@@ -74,6 +79,11 @@ const BusinessDetail = () => {
         });
         await updateDoc(likesRef, {
           users: arrayRemove(userEmail),
+=======
+      if (liked) {
+        await updateDoc(docRef, {
+          likes: arrayRemove('user-id'),
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
         });
         Toast.show({
           type: 'success',
@@ -82,11 +92,16 @@ const BusinessDetail = () => {
         });
       } else {
         await updateDoc(docRef, {
+<<<<<<< HEAD
           likes: arrayUnion(userEmail),
         });
         await setDoc(likesRef, {
           users: arrayUnion(userEmail),
         }, { merge: true });
+=======
+          likes: arrayUnion('user-id'),
+        });
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
         Toast.show({
           type: 'success',
           text1: 'Liked',
@@ -108,7 +123,11 @@ const BusinessDetail = () => {
     try {
       const docRef = doc(db, 'BusinessList', BusinessId);
       await updateDoc(docRef, {
+<<<<<<< HEAD
         ratings: arrayUnion({ userId: auth.currentUser?.email, rating: newRating }),
+=======
+        ratings: arrayUnion({ userId: 'user-id', rating: newRating }),
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
       });
       setRating(newRating);
       Toast.show({
@@ -140,10 +159,17 @@ const BusinessDetail = () => {
     try {
       const docRef = doc(db, 'BusinessList', BusinessId);
       await updateDoc(docRef, {
+<<<<<<< HEAD
         comments: arrayUnion({ userId: auth.currentUser?.email, comment: comment, rating: rating }),
       });
       setComment('');
       setComments((prevComments) => [...prevComments, { userId: auth.currentUser?.email, comment: comment, rating: rating }]);
+=======
+        comments: arrayUnion({ userId: 'user-id', comment: comment, rating: rating }),
+      });
+      setComment('');
+      setComments((prevComments) => [...prevComments, { userId: 'user-id', comment: comment, rating: rating }]);
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
       Toast.show({
         type: 'success',
         text1: 'Comment Added',
@@ -242,7 +268,11 @@ const BusinessDetail = () => {
       <Text style={styles.businessName}>{business.name}</Text>
 
       <View style={styles.ratingContainer}>
+<<<<<<< HEAD
         <Text style={styles.ratingText}>{business.likes?.length || '0'}</Text>
+=======
+        <Text style={styles.ratingText}>{business.likes || '0'}</Text>
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
         <MaterialIcons name="star" size={20} color="#FFD700" />
       </View>
 
@@ -313,6 +343,7 @@ const BusinessDetail = () => {
         <Text style={styles.sectionTitle}>Comments</Text>
         {comments.map((comment, index) => (
           <View key={index} style={styles.commentContainer}>
+<<<<<<< HEAD
             <View style={styles.commentHeader}>
               <FontAwesome name="user-circle" size={24} color="#5D3FD3" />
               <Text style={styles.commentUser}>{comment.userId.split('@')[0]}</Text>
@@ -328,6 +359,11 @@ const BusinessDetail = () => {
               ))}
             </View>
             <Text style={styles.commentText}>{comment.comment}</Text>
+=======
+            <Text style={styles.commentText}>
+              {comment.userId}: {comment.comment}
+            </Text>
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
           </View>
         ))}
       </View>
@@ -352,6 +388,7 @@ const styles = StyleSheet.create({
     color: '#5D3FD3',
   },
   businessImage: {
+<<<<<<< HEAD
     width: width,
     height: height * 0.3,
     resizeMode: 'cover',
@@ -361,6 +398,15 @@ const styles = StyleSheet.create({
     top: 40,
     left: 20,
     zIndex: 1,
+=======
+    width: '100%',
+    height: 250,
+    resizeMode: 'cover',
+  },
+  backButton: {
+    marginTop: 20,
+    marginLeft: 10,
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
   },
   likeButton: {
     position: 'absolute',
@@ -373,7 +419,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginTop: 10,
+<<<<<<< HEAD
     color: '#333',
+=======
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -384,16 +433,27 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 18,
     marginRight: 5,
+<<<<<<< HEAD
     color: '#333',
   },
   iconRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+=======
+  },
+  iconRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
     marginVertical: 15,
   },
   icon: {
     width: 40,
     height: 40,
+<<<<<<< HEAD
+=======
+    marginHorizontal: 10,
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
   },
   sectionContainer: {
     paddingHorizontal: 20,
@@ -404,16 +464,27 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#333',
+<<<<<<< HEAD
     marginBottom: 10,
+=======
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
   },
   sectionText: {
     fontSize: 16,
     color: '#555',
+<<<<<<< HEAD
     lineHeight: 24,
   },
   ratingSectionContainer: {
     paddingHorizontal: 20,
     paddingVertical: 20,
+=======
+    marginTop: 10,
+  },
+  ratingSectionContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
     borderRadius: 10,
     marginVertical: 20,
     backgroundColor: '#F5F5F5',
@@ -429,8 +500,13 @@ const styles = StyleSheet.create({
     marginVertical: 15,
     alignItems: 'center',
     borderRadius: 10,
+<<<<<<< HEAD
     width: width * 0.8,
     alignSelf: 'center',
+=======
+    width: 300,
+    margin: 70,
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
   },
   addButtonText: {
     color: '#fff',
@@ -438,6 +514,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   commentContainer: {
+<<<<<<< HEAD
     marginVertical: 10,
     paddingVertical: 10,
     borderBottomWidth: 1,
@@ -457,6 +534,12 @@ const styles = StyleSheet.create({
   commentRating: {
     flexDirection: 'row',
     marginBottom: 5,
+=======
+    marginVertical: 5,
+    paddingVertical: 5,
+    borderBottomWidth: 1,
+    borderColor: '#f0f0f0',
+>>>>>>> cc133ce49b03874d1e27995edaf3e53d38aea10b
   },
   commentText: {
     fontSize: 16,
