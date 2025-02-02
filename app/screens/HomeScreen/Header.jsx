@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { auth, db } from '../../../comfig/FireBaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 
 const Header = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -47,7 +48,16 @@ const Header = () => {
 
   const navigateTo = (path) => {
     setDropdownVisible(false);
-    router.push({ pathname: path, params: { userEmail } });
+    router.push(path);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.replace('/screens/LoginScreen/Login'); // Redirect to Login screen
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
 
   return (
@@ -87,9 +97,14 @@ const Header = () => {
             <TouchableOpacity style={styles.dropdownButton} onPress={() => navigateTo('/business/Comments')}>
               <Text style={styles.buttonText}>💬 Comments</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.dropdownButtonSingle} onPress={() => navigateTo('/business/Likes')}>
-              <Text style={styles.buttonText}>❤️ Likes</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity style={styles.dropdownButton} onPress={() => navigateTo('/business/Likes')}>
+                <Text style={styles.buttonText}>❤️ Likes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.dropdownButton} onPress={handleLogout}>
+                <Text style={styles.buttonText}>🚪 Logout</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </Animated.View>
       )}
@@ -212,13 +227,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 5,
   },
-  dropdownButtonSingle: {
-    width: '95%',
-    backgroundColor: '#5D3FD3',
-    paddingVertical: 12,
-    marginVertical: 5,
-    borderRadius: 10,
-    alignItems: 'center',
+  buttonRow: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-between',
   },
   buttonText: {
     fontSize: 16,
