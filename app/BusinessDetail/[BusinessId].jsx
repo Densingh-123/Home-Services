@@ -86,6 +86,11 @@ const BusinessDetail = () => {
         });
         await setDoc(likesRef, {
           users: arrayUnion(userEmail),
+          businessId: BusinessId,
+          businessName: business.name,
+          businessImage: business.image,
+          businessRatings: business.ratings || [],
+          businessLikes: business.likes || [],
         }, { merge: true });
         Toast.show({
           type: 'success',
@@ -482,7 +487,7 @@ const styles = StyleSheet.create({
   commentSubmitButton: {
     backgroundColor: '#5D3FD3',
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 20, 
     borderRadius: 10,
   },
   commentSubmitButtonText: {
