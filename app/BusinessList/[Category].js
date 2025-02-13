@@ -32,7 +32,17 @@ const BusinessListByCategory = () => {
       const querySnapshot = await getDocs(q);
       const businessData = [];
       querySnapshot.forEach((doc) => {
-        businessData.push({ id: doc.id, ...doc.data() });
+        const business = { id: doc.id, ...doc.data() };
+
+        // Calculate average rating
+        if (business.ratings && business.ratings.length > 0) {
+          const totalRating = business.ratings.reduce((sum, rating) => sum + rating.rating, 0);
+          business.averageRating = totalRating / business.ratings.length;
+        } else {
+          business.averageRating = 0; // Default rating if no ratings exist
+        }
+
+        businessData.push(business);
       });
       setBusinessList(businessData);
     } catch (error) {
@@ -81,7 +91,7 @@ const BusinessListByCategory = () => {
               <Text style={styles.businessName}>{business.name}</Text>
               <View style={styles.ratingContainer}>
                 <MaterialIcons name="star" size={20} color="#FFD700" />
-                <Text style={styles.ratingText}>{business.star || '0'}</Text>
+                <Text style={styles.ratingText}>{business.averageRating.toFixed(1)}</Text>
               </View>
               <Text style={styles.businessAddress}>{business.address}</Text>
 

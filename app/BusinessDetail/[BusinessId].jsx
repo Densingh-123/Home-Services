@@ -37,6 +37,7 @@ const BusinessDetail = () => {
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [comments, setComments] = useState([]);
+  const [averageRating, setAverageRating] = useState(0); // State for average rating
 
   useEffect(() => {
     getBusinessDetailById();
@@ -48,10 +49,19 @@ const BusinessDetail = () => {
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        console.log('Document data:', docSnap.data());
-        setBusiness(docSnap.data());
-        setLiked(docSnap.data().likes?.includes(auth.currentUser?.email));
-        setComments(docSnap.data().comments || []);
+        const businessData = docSnap.data();
+        setBusiness(businessData);
+        setLiked(businessData.likes?.includes(auth.currentUser?.email));
+        setComments(businessData.comments || []);
+
+        // Calculate average rating
+        if (businessData.ratings && businessData.ratings.length > 0) {
+          const totalRating = businessData.ratings.reduce((sum, rating) => sum + rating.rating, 0);
+          const avgRating = totalRating / businessData.ratings.length;
+          setAverageRating(avgRating);
+        } else {
+          setAverageRating(0); // Default rating if no ratings exist
+        }
       } else {
         console.log('No such document!');
       }
@@ -116,6 +126,13 @@ const BusinessDetail = () => {
         ratings: arrayUnion({ userId: auth.currentUser?.email, rating: newRating }),
       });
       setRating(newRating);
+
+      // Recalculate average rating
+      const updatedRatings = [...business.ratings, { userId: auth.currentUser?.email, rating: newRating }];
+      const totalRating = updatedRatings.reduce((sum, rating) => sum + rating.rating, 0);
+      const avgRating = totalRating / updatedRatings.length;
+      setAverageRating(avgRating);
+
       Toast.show({
         type: 'success',
         text1: 'Rating Added',
@@ -247,7 +264,7 @@ const BusinessDetail = () => {
       <Text style={styles.businessName}>{business.name}</Text>
 
       <View style={styles.ratingContainer}>
-        <Text style={styles.ratingText}>{business.likes?.length || '0'}</Text>
+        <Text style={styles.ratingText}>{averageRating.toFixed(1)}</Text>
         <MaterialIcons name="star" size={20} color="#FFD700" />
       </View>
 
